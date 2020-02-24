@@ -1,9 +1,9 @@
-# laravel-filebeat
+# laralog
 ## Installation
    
-   Require the `shallowman/laravel-filebeat` package in your `composer.json` and update your dependencies:
+   Require the `shallowman/laralog` package in your `composer.json` and update your dependencies:
    ```sh
-   $ composer require shallowman/laravel-filebeat
+   $ composer require shallowman/laralog
    ```
    
    For laravel >=5.5 that's all. This package supports Laravel new [Package Discovery](https://laravel.com/docs/5.5/packages#package-discovery).
