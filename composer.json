@@ -1,0 +1,49 @@
+{
+    "name": "shallowman/laralog",
+    "description": "A middleware which could collect the log with json format of laravel application, including everyone request information。It's very friendly to harvest of filebeat",
+    "keywords": [
+        "laravel",
+        "log",
+        "json",
+        "filebeat"
+    ],
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Feron Wu",
+            "email": "feron.wu@gmail.com"
+        }
+    ],
+    "require": {
+        "php": ">=7",
+        "illuminate/support": "5.6.x|5.7.x|5.8.x"
+    },
+    "autoload": {
+        "psr-4": {
+            "Shallowman\\Laralog\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Shallowman\\Laralog\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Shallowman\\Laralog\\ServiceProvider"
+            ]
+        }
+    },
+    "require-dev": {
+        "laravel/framework": "^5.5",
+        "phpunit/phpunit": "^4.8|^5.2|^7.0"
+    },
+    "scripts": {
+        "test": "phpunit",
+        "check-style": "phpcs -p --standard=PSR2 src/",
+        "fix-style": "phpcbf -p --standard=PSR2 src/"
+    },
+    "minimum-stability": "dev",
+    "prefer-stable": true
+}
