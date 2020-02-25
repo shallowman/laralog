@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use stdClass;
+use Shallowman\Laralog\LogManager;
 
 class CaptureRequestLifecycle
 {
@@ -45,6 +45,17 @@ class CaptureRequestLifecycle
 
     protected $response;
 
+    protected $parameters;
+
+    private $timestamp;
+
+    protected $log;
+
+    public function __construct(LogManager $log)
+    {
+        $this->log = $log;
+    }
+
     /**
      * Middleware to hand http request from this to next
      *
@@ -59,77 +70,37 @@ class CaptureRequestLifecycle
     }
 
     /**
-     * standardize response content data structure
-     *
-     * @param $response string response content
-     *
-     * @return mixed|stdClass
-     */
-    protected function standardizeResponse($response)
-    {
-        if (!$response) {
-            return new stdClass();
-        }
-
-        $response = @json_decode($response, true);
-
-        if (is_array($response) && array_key_exists('data', $response)) {
-            $response['data'] = json_encode($response['data'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
-        }
-
-        return $response;
-    }
-
-    /**
-     * @param  \Illuminate\Http\Request                   $request
-     * @param  \Symfony\Component\HttpFoundation\Response $response
+     * @param  \Illuminate\Http\Request                                             $request
+     * @param  \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response $response
      * write application log when response to the request client
      */
     public function terminate($request, $response)
     {
-        $level = $request->attributes->get('log_level') ?: 'info';
-        $context = $request->attributes->get('context');
-        $message = $request->attributes->get('message');
-        $response = $this->standardizeResponse($response->getContent());
-        $now = Carbon::now();
-        $content = [
-            'app'         => config('app.name'),
-            'uri'         => $request->getHost().$request->getRequestUri(),
-            'method'      => $request->method(),
-            'ip'          => implode('|', $request->getClientIps()),
-            'platform'    => '',
-            'version'     => '',
-            'os'          => '',
-            'level'       => $level,
-            'tag'         => '',
-            'start'       => Carbon::createFromTimestampMs(round(LARAVEL_START * 1000))->format('Y-m-d H:i:s.u'),
-            'end'         => $now->format('Y-m-d H:i:s.u'),
-            'parameters'  => json_encode($request->input(), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
-            'performance' => round(microtime(true) - LARAVEL_START, 3),
-            'details'     => [
-                'message' => $message,
-                'detail'  => $context,
-            ],
-            'response'    => $response,
-        ];
-
-        $timestamp = substr($now->setTimezone('UTC')->format('Y-m-d\TH:i:s.u'), 0, -3).'Z';
-        $this->service->channel('filebeat')->log($level, '', ['api' => $content, '@timestamp' => $timestamp]);
+        $this->setRequestLifecycleVariables($request, $response);
+        $this->log->log('info', '', $this->collectLog());
     }
 
-    private function packReqContentsToLog()
+    private function getStartMicroTimestamp(Request $request)
     {
+        if (defined('LARAVEL_START')) {
+            return LARAVEL_START;
+        }
 
+        if ($timestamp = $request->server('REQUEST_TIME_FLOAT')) {
+            return $timestamp;
+        }
+
+        return microtime(true);
     }
 
-    private function getRequestStart(Request $request)
+    private function setTimestamp()
     {
-        return defined('LARAVEL_START') ? LARAVEL_START : $request->server('REQUEST_TIME');
+        $this->timestamp = now()->toIso8601String();
     }
 
-    private function getRequestEnd()
+    public function setParameters(string $parameters)
     {
-        return now()->format('Y-m-d H:i:s.u');
+        $this->parameters = $parameters;
     }
 
     public function setPlatform(string $platform = '')
@@ -187,7 +158,6 @@ class CaptureRequestLifecycle
         $this->method = $method;
     }
 
-
     protected function setStart(string $start)
     {
         $this->start = $start;
@@ -208,16 +178,62 @@ class CaptureRequestLifecycle
         $this->logChannel = $logChannel;
     }
 
-    /**
-     * @param Request  $request
-     * @param Response $response
-     */
-    public function captureRequestLifecycleParameters(Request $request, Response $response)
+    protected function setPerformance(float $performance)
     {
+        $this->performance = $performance;
     }
 
-    public function packRequestLifecycleContents()
+    public function setMessage(string $message = '')
     {
+        $this->msg = $message;
+    }
 
+    public function setRequestLifecycleVariables(Request $request, Response $response)
+    {
+        $this->setAppName(config('app.name') ?? 'Laravel');
+        $this->setChannel();
+        $this->setEnv(config('app.env') ?? 'Unknown');
+        $this->setLogChannel();
+        $this->setLevel();
+        $this->setOs();
+        $this->setPlatform();
+        $this->setTag();
+        $this->setUri($request->getUri());
+        $this->setMethod($request->getMethod());
+        $this->setIp(implode(',', $request->getClientIps()));
+        $this->setVersion();
+        $this->setParameters(collect($request->all())->toJson());
+        $this->setStart(Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'));
+        $this->setEnd(now()->format('Y-m-d H:i.s.u'));
+        $this->setPerformance($this->getStartMicroTimestamp($request) - microtime(true));
+        $this->setResponse($response->content());
+        $this->setMessage();
+        $this->setTimestamp();
+    }
+
+
+    public function collectLog()
+    {
+        return [
+            '@timestamp'  => $this->timestamp,
+            'app'         => $this->app,
+            'env'         => $this->env,
+            'channel'     => $this->channel,
+            'logChannel'  => $this->logChannel,
+            'uri'         => $this->uri,
+            'method'      => $this->method,
+            'ip'          => $this->ip,
+            'platform'    => $this->platform,
+            'version'     => $this->version,
+            'os'          => $this->os,
+            'level'       => $this->level,
+            'tag'         => $this->tag,
+            'start'       => $this->start,
+            'end'         => $this->end,
+            'parameters'  => $this->parameters,
+            'performance' => $this->performance,
+            'msg'         => $this->msg,
+            'response'    => $this->response,
+        ];
     }
 }
