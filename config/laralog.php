@@ -8,8 +8,8 @@ return [
     'channels' => [
         'laralog' => [
             'driver' => 'daily',
-            'path'   => env('', '/application/storage/logs/app.log'),
-            'tap'    => [Shallowman\Laralog\LaraLogFormatter::class],
+            'path'   => env('', 'logs/laralog-app.log'),
+            'tap'    => [Shallowman\Laralog\Formatter\LaraLogFormatter::class],
             'days'   => 7,
         ],
     ],

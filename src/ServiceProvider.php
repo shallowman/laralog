@@ -3,7 +3,6 @@
 
 namespace Shallowman\Laralog;
 
-use Illuminate\Log\LogManager as LaravelLogManager;
 use Illuminate\Support\ServiceProvider as LaravelServiceProvider;
 
 class ServiceProvider extends LaravelServiceProvider
@@ -22,7 +21,7 @@ class ServiceProvider extends LaravelServiceProvider
 
     public function register()
     {
-        $this->app->extend(LaravelLogManager::class, function() {
+        $this->app->extend('log', function() {
             return new LogManager($this->app);
         });
     }
