@@ -21,6 +21,7 @@ class ServiceProvider extends LaravelServiceProvider
 
     public function register()
     {
+        $this->mergeConfigFrom($this->resolveConfigPath(), 'laralog');
         $this->app->extend('log', function() {
             return new LogManager($this->app);
         });
