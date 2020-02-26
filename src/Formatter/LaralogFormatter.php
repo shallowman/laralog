@@ -4,7 +4,7 @@
 namespace Shallowman\Laralog\Formatter;
 
 
-class LaraLogFormatter
+class LaralogFormatter
 {
     /**
      * @param \Monolog\Logger $logger
@@ -12,7 +12,7 @@ class LaraLogFormatter
     public function __invoke($logger)
     {
         foreach ($logger->getHandlers() as $handler) {
-            $handler->setFormatter(new LogstashFormatter(config('app.name')));
+            $handler->setFormatter(new JsonFormatter());
         }
     }
 }

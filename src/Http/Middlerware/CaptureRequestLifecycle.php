@@ -7,7 +7,7 @@ use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
-use Shallowman\Laralog\LogManager;
+use Shallowman\Laralog\LaraLogger;
 
 class CaptureRequestLifecycle
 {
@@ -47,11 +47,13 @@ class CaptureRequestLifecycle
 
     protected $parameters;
 
-    private $timestamp;
-
     protected $log;
 
-    public function __construct(LogManager $log)
+    public $extra;
+
+    private $timestamp;
+
+    public function __construct(LaraLogger $log)
     {
         $this->log = $log;
     }
@@ -77,7 +79,7 @@ class CaptureRequestLifecycle
     public function terminate($request, $response)
     {
         $this->setRequestLifecycleVariables($request, $response);
-        $this->log->log('info', '', $this->collectLog());
+        $this->log->info(null, $this->captureLifecycle());
     }
 
     private function getStartMicroTimestamp(Request $request)
@@ -93,14 +95,19 @@ class CaptureRequestLifecycle
         return microtime(true);
     }
 
-    private function setTimestamp()
+    private function setTimestamp(string $timestamp)
     {
-        $this->timestamp = now()->toIso8601String();
+        $this->timestamp = $timestamp;
     }
 
     public function setParameters(string $parameters)
     {
         $this->parameters = $parameters;
+    }
+
+    public function setExtra(string $extra = '')
+    {
+        $this->extra = $extra;
     }
 
     public function setPlatform(string $platform = '')
@@ -138,7 +145,7 @@ class CaptureRequestLifecycle
         $this->channel = $channel;
     }
 
-    protected function setLevel(string $level = 'info')
+    protected function setLevel(string $level = 'INFO')
     {
         $this->level = $level;
     }
@@ -205,14 +212,19 @@ class CaptureRequestLifecycle
         $this->setParameters(collect($request->all())->toJson());
         $this->setStart(Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'));
         $this->setEnd(now()->format('Y-m-d H:i.s.u'));
-        $this->setPerformance($this->getStartMicroTimestamp($request) - microtime(true));
+        $this->setPerformance(round(microtime(true) - $this->getStartMicroTimestamp($request), 6));
         $this->setResponse($response->content());
         $this->setMessage();
-        $this->setTimestamp();
+        $this->setTimestamp(now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'));
+        $this->setExtra();
     }
 
-
-    public function collectLog()
+    /**
+     * Capture request lifecycle content
+     *
+     * @return array
+     */
+    public function captureLifecycle()
     {
         return [
             '@timestamp'  => $this->timestamp,
@@ -234,6 +246,7 @@ class CaptureRequestLifecycle
             'performance' => $this->performance,
             'msg'         => $this->msg,
             'response'    => $this->response,
+            'extra'       => $this->extra,
         ];
     }
 }
