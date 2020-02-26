@@ -7,9 +7,41 @@ use Monolog\Formatter\JsonFormatter as MonologJsonFormatter;
 
 class JsonFormatter extends MonologJsonFormatter
 {
+
+    public const FORMATTER_KEYS = [
+        '@timestamp',
+        'app',
+        'env',
+        'level',
+        'logChannel',
+        'channel',
+        'uri',
+        'method',
+        'ip',
+        'platform',
+        'version',
+        'os',
+        'tag',
+        'start',
+        'end',
+        'parameters',
+        'performance',
+        'response',
+        'extra',
+        'msg',
+    ];
+
     public function format(array $record)
     {
-        return $this->toJson(array_merge($this->pruneLogRecord($record), $record['context'])).PHP_EOL;
+        $context = $this->filterContext($record['context'], self::FORMATTER_KEYS);
+        return $this->toJson(array_merge($this->pruneLogRecord($record), $context)).PHP_EOL;
+    }
+
+    public function filterContext(array $context, array $keys): array
+    {
+        return array_filter($context, function($key) use ($keys) {
+            return in_array($key, $keys, true);
+        }, ARRAY_FILTER_USE_KEY);
     }
 
     public function pruneLogRecord(array $record): array
@@ -33,7 +65,8 @@ class JsonFormatter extends MonologJsonFormatter
             'parameters'  => '',
             'performance' => round(microtime(true) - $this->getStartMicroTimestamp(), 6),
             'response'    => '',
-            'extra'       => $record['exception'] ?? '',
+            'extra'       => print_r(array_merge($record['context'], $record['exception'] ?? []), true),
+            'msg'         => $record['message'],
         ];
     }
 
