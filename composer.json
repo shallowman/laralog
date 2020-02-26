@@ -29,11 +29,6 @@
         }
     },
     "extra": {
-        "laravel": {
-            "providers": [
-                "Shallowman\\Laralog\\ServiceProvider"
-            ]
-        }
     },
     "require-dev": {
         "laravel/framework": "^5.5",
