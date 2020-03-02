@@ -5,7 +5,7 @@
 - 提供 Laravel Http 中间件，捕捉 Http 请求生命周期内的必要信息
 - Http 生命周期信息以 `JSON` 格式记录到日志文件中
 - 提供了日志 `JSON` 化格式组件，可以无缝使用 `Filebeat` 采集日志到 `ES` 中，避免做格式优化
-
+- 提供了过滤请求中敏感信息的配置，可以过滤到请求参数中的敏感信息，例如，密码等
 ## 安装 
 - 方式一  
 
@@ -55,11 +55,24 @@ LOG_CHANNEL=daily
 ],
 ```
 
+3. 配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `except` 键对应的数组中，增加待过滤的请求参数键值
+
+```php
+return [
+    'except' => [
+        'password',
+        'password_information',
+        'password_confirm',
+        'something_to_except',
+    ],
+];
+```
+
 ## `Laravel` 开发时如何记日志
 
 - 日志记录保持不变，如下使用默认 `channel` 记录日志
 ```php
-Log::info('log message'，$context);
+Log::info('log message', $context);
 ```
 
 - 使用自定义 `channel` 写日志
