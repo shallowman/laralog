@@ -65,7 +65,7 @@ class JsonFormatter extends MonologJsonFormatter
             'parameters'  => '',
             'performance' => round(microtime(true) - $this->getStartMicroTimestamp(), 6),
             'response'    => '',
-            'extra'       => print_r(array_merge($record['context'], $record['exception'] ?? []), true),
+            'extra'       => $this->toJson($record['context'] ?? [], true),
             'msg'         => $record['message'],
         ];
     }
