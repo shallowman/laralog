@@ -21,7 +21,7 @@
 ### 配置 `Laravel` `Http` 中间件
 
 - 在 `app\Http\Kernel.php` 文件中，找到 `protected $middleware` 属性，添加如下声明。
-    ```
+    ```php
     $middleware = [
         ...
         \Shallowman\Laralog\Http\Middleware\CaptureRequestLifecycle::class,
