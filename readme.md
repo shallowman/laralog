@@ -16,7 +16,11 @@
         ```sh
         $ composer require shallowman/laralog
         ```
-
+3. 配置文件发布
+    - 在项目目录下面运行如下命令，发布 `config` 资源文件
+    ```sh
+    php artisan vendor:publish --provider="\Shallowman\Laralog\ServiceProvider"
+    ```
 ## 配置
 ### 配置 `Laravel` `Http` 中间件
 
