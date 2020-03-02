@@ -9,11 +9,11 @@
 ## 安装 
 - 方式一  
 
-1. 添加 `shallowman/laralog` 包声明到工程项目的 `composer.json` 文件中
-2. 使用 `composer install` 命令安装
+1.添加 `shallowman/laralog` 包声明到工程项目的 `composer.json` 文件中
+2.使用 `composer install` 命令安装
 
 - 方式二  
-1. 使用如下命令直接安装依赖
+1.使用如下命令直接安装依赖
 
 ```sh
 $ composer require shallowman/laralog
@@ -22,7 +22,7 @@ $ composer require shallowman/laralog
 ## 配置
 ### 配置 `Laravel` `Http` 中间件
 
-1. 在 `app\Http\Kernel.php` 文件中，找到 `protected $middleware` 属性，添加如下声明。
+1.在 `app\Http\Kernel.php` 文件中，找到 `protected $middleware` 属性，添加如下声明。
 ```
 $middleware = [
     ...
@@ -31,13 +31,13 @@ $middleware = [
 ```
 
 ### 配置写日志组件
-1. 在 `.env` 配置中设置默认 `LOG_CHANNEL`
+1.在 `.env` 配置中设置默认 `LOG_CHANNEL`   
 
 ```ini
 LOG_CHANNEL=daily
 ```
 
-2. 在 `config/logging.php` 中，设置默认日志频道 `channel` 为 `daily` 的日志组件，添加如下配置声明
+2.在 `config/logging.php` 中，设置默认日志频道 `channel` 为 `daily` 的日志组件，添加如下配置声明 
 
 ```php
 'daily' => [
@@ -55,7 +55,7 @@ LOG_CHANNEL=daily
 ],
 ```
 
-3. 配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `except` 键对应的数组中，增加待过滤的请求参数键值
+3.配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `except` 键对应的数组中，增加待过滤的请求参数键值
 
 ```php
 return [
