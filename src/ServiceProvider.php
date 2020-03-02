@@ -9,11 +9,11 @@ class ServiceProvider extends LaravelServiceProvider
 {
     public function boot()
     {
-        $this->publishes([realpath(__DIR__.'/../config/laralog.php.php') => config_path('laralog.php')]);
+        $this->publishes([realpath(__DIR__.'/../config/laralog.php') => config_path('laralog.php')]);
     }
 
     public function register()
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/laralog.php.php', 'laralog');
+        $this->mergeConfigFrom(__DIR__.'/../config/laralog.php', 'laralog');
     }
 }
