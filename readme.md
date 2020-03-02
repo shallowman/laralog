@@ -7,17 +7,15 @@
 - 提供了日志 `JSON` 化格式组件，可以无缝使用 `Filebeat` 采集日志到 `ES` 中，避免做格式优化
 - 提供了过滤请求中敏感信息的配置，可以过滤到请求参数中的敏感信息，例如，密码等
 ## 安装 
-- 方式一  
-
-- 添加 `shallowman/laralog` 包声明到工程项目的 `composer.json` 文件中
-- 使用 `composer install` 命令安装
-
-- 方式二  
-
-  使用如下命令直接安装依赖
-    ```sh
-    $ composer require shallowman/laralog
-    ```
+1. 方式一  
+    - 添加 `shallowman/laralog` 包声明到工程项目的 `composer.json` 文件中
+    - 使用 `composer install` 命令安装
+    
+2. 方式二  
+    - 使用如下命令直接安装依赖
+        ```sh
+        $ composer require shallowman/laralog
+        ```
 
 ## 配置
 ### 配置 `Laravel` `Http` 中间件
