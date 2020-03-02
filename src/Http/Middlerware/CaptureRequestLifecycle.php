@@ -209,7 +209,7 @@ class CaptureRequestLifecycle
         $this->setMethod($request->getMethod());
         $this->setIp(implode(',', $request->getClientIps()));
         $this->setVersion();
-        $this->setParameters(collect($request->input())->except(app('config')['laralog.except'])->toJson());
+        $this->setParameters(collect($request->except(config('laralog.except')))->toJson());
         $this->setStart(Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'));
         $this->setEnd(now()->format('Y-m-d H:i.s.u'));
         $this->setPerformance(round(microtime(true) - $this->getStartMicroTimestamp($request), 6));
