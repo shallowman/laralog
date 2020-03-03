@@ -7,37 +7,14 @@ use Monolog\Formatter\JsonFormatter as MonologJsonFormatter;
 
 class JsonFormatter extends MonologJsonFormatter
 {
-
-    public const FORMATTER_KEYS = [
-        '@timestamp',
-        'app',
-        'env',
-        'level',
-        'logChannel',
-        'channel',
-        'uri',
-        'method',
-        'ip',
-        'platform',
-        'version',
-        'os',
-        'tag',
-        'start',
-        'end',
-        'parameters',
-        'performance',
-        'response',
-        'extra',
-        'msg',
-    ];
-
     public function format(array $record)
     {
-        $context = $this->filterContext($record['context'], self::FORMATTER_KEYS);
-        return $this->toJson(array_merge($this->pruneLogRecord($record), $context)).PHP_EOL;
-    }
+        $record = $this->pruneLogRecord($record);
+        $context = $this->pruneLogContext($record['context'], array_keys($record));
+        return $this->toJson(array_merge($record, $context)).PHP_EOL;
+    }s
 
-    public function filterContext(array $context, array $keys): array
+    public function pruneLogContext(array $context, array $keys): array
     {
         return array_filter($context, function($key) use ($keys) {
             return in_array($key, $keys, true);
@@ -67,6 +44,8 @@ class JsonFormatter extends MonologJsonFormatter
             'response'    => '',
             'extra'       => $this->toJson($record['context'] ?? [], true),
             'msg'         => $record['message'],
+            'headers'     => '',
+            'hostname'    => gethostname() ?: 'Unknown hostname',
         ];
     }
 
