@@ -49,6 +49,10 @@ class CaptureRequestLifecycle
 
     protected $log;
 
+    protected $headers;
+
+    protected $hostname;
+
     public $extra;
 
     private $timestamp;
@@ -195,6 +199,16 @@ class CaptureRequestLifecycle
         $this->msg = $message;
     }
 
+    protected function setHeaders(string $headers)
+    {
+        $this->headers = $headers;
+    }
+
+    protected function setHostname(string $hostname)
+    {
+        $this->hostname = $hostname;
+    }
+
     public function setRequestLifecycleVariables(Request $request, Response $response)
     {
         $this->setAppName(config('app.name') ?? 'Laravel');
@@ -217,6 +231,8 @@ class CaptureRequestLifecycle
         $this->setMessage();
         $this->setTimestamp(now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'));
         $this->setExtra();
+        $this->setHeaders(collect($request->headers->all())->toJson());
+        $this->setHostname(gethostname() ?: 'Unknown Hostname');
     }
 
     /**
