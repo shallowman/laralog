@@ -12,7 +12,7 @@ class JsonFormatter extends MonologJsonFormatter
         $record = $this->pruneLogRecord($record);
         $context = $this->pruneLogContext($record['context'], array_keys($record));
         return $this->toJson(array_merge($record, $context)).PHP_EOL;
-    }s
+    }
 
     public function pruneLogContext(array $context, array $keys): array
     {
