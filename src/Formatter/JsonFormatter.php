@@ -9,9 +9,9 @@ class JsonFormatter extends MonologJsonFormatter
 {
     public function format(array $record)
     {
-        $record = $this->pruneLogRecord($record);
-        $context = $this->pruneLogContext($record['context'], array_keys($record));
-        return $this->toJson(array_merge($record, $context)).PHP_EOL;
+        $logRecord = $this->pruneLogRecord($record);
+        $logContext = $this->pruneLogContext($record['context'], array_keys($logRecord));
+        return $this->toJson(array_merge($logRecord, $logContext)).PHP_EOL;
     }
 
     public function pruneLogContext(array $context, array $keys): array
