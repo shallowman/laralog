@@ -263,6 +263,8 @@ class CaptureRequestLifecycle
             'msg'         => $this->msg,
             'response'    => $this->response,
             'extra'       => $this->extra,
+            'headers'     => $this->headers,
+            'hostname'    => $this->hostname,
         ];
     }
 }
