@@ -16,7 +16,7 @@ class JsonFormatter extends MonologJsonFormatter
 
     public function pruneLogContext(array $context, array $keys): array
     {
-        return array_filter($context, function($key) use ($keys) {
+        return array_filter($context, static function($key) use ($keys) {
             return in_array($key, $keys, true);
         }, ARRAY_FILTER_USE_KEY);
     }

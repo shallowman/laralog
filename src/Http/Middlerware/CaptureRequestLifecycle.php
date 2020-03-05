@@ -6,8 +6,8 @@ namespace Shallowman\Laralog\Http\Middleware;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Shallowman\Laralog\LaraLogger;
+use Symfony\Component\HttpFoundation\Response;
 
 class CaptureRequestLifecycle
 {
@@ -76,11 +76,11 @@ class CaptureRequestLifecycle
     }
 
     /**
-     * @param  \Illuminate\Http\Request                                             $request
-     * @param  \Illuminate\Http\Response|\Symfony\Component\HttpFoundation\Response $response
-     * write application log when response to the request client
+     * @param  \Illuminate\Http\Request                   $request
+     * @param  \Symfony\Component\HttpFoundation\Response $response
+     * Capture http lifecycle context and write to log with json format
      */
-    public function terminate($request, $response)
+    public function terminate($request, $response): void
     {
         $this->setRequestLifecycleVariables($request, $response);
         $this->log->info(null, $this->captureLifecycle());
@@ -99,117 +99,117 @@ class CaptureRequestLifecycle
         return microtime(true);
     }
 
-    private function setTimestamp(string $timestamp)
+    private function setTimestamp(string $timestamp): void
     {
         $this->timestamp = $timestamp;
     }
 
-    public function setParameters(string $parameters)
+    public function setParameters(string $parameters): void
     {
         $this->parameters = $parameters;
     }
 
-    public function setExtra(string $extra = '')
+    public function setExtra(string $extra = ''): void
     {
         $this->extra = $extra;
     }
 
-    public function setPlatform(string $platform = '')
+    public function setPlatform(string $platform = ''): void
     {
         $this->platform = $platform;
     }
 
-    public function setVersion(string $version = '')
+    public function setVersion(string $version = ''): void
     {
         $this->version = $version;
     }
 
-    public function setOs(string $os = '')
+    public function setOs(string $os = ''): void
     {
         $this->os = $os;
     }
 
-    public function setTag(string $tag = '')
+    public function setTag(string $tag = ''): void
     {
         $this->tag = $tag;
     }
 
-    protected function setAppName(string $app)
+    protected function setAppName(string $app): void
     {
         $this->app = $app;
     }
 
-    protected function setEnv(string $env)
+    protected function setEnv(string $env): void
     {
         $this->env = $env;
     }
 
-    protected function setChannel(string $channel = 'app')
+    protected function setChannel(string $channel = 'app'): void
     {
         $this->channel = $channel;
     }
 
-    protected function setLevel(string $level = 'INFO')
+    protected function setLevel(string $level = 'INFO'): void
     {
         $this->level = $level;
     }
 
-    protected function setIp(string $ip)
+    protected function setIp(string $ip): void
     {
         $this->ip = $ip;
     }
 
-    protected function setUri(string $uri)
+    protected function setUri(string $uri): void
     {
         $this->uri = $uri;
     }
 
-    protected function setMethod(string $method)
+    protected function setMethod(string $method): void
     {
         $this->method = $method;
     }
 
-    protected function setStart(string $start)
+    protected function setStart(string $start): void
     {
         $this->start = $start;
     }
 
-    protected function setEnd(string $end)
+    protected function setEnd(string $end): void
     {
         $this->end = $end;
     }
 
-    protected function setResponse(string $response)
+    protected function setResponse(string $response): void
     {
         $this->response = $response;
     }
 
-    protected function setLogChannel(string $logChannel = 'middleware')
+    protected function setLogChannel(string $logChannel = 'middleware'): void
     {
         $this->logChannel = $logChannel;
     }
 
-    protected function setPerformance(float $performance)
+    protected function setPerformance(float $performance): void
     {
         $this->performance = $performance;
     }
 
-    public function setMessage(string $message = '')
+    public function setMessage(string $message = ''): void
     {
         $this->msg = $message;
     }
 
-    protected function setHeaders(string $headers)
+    protected function setHeaders(string $headers): void
     {
         $this->headers = $headers;
     }
 
-    protected function setHostname(string $hostname)
+    protected function setHostname(string $hostname): void
     {
         $this->hostname = $hostname;
     }
 
-    public function setRequestLifecycleVariables(Request $request, Response $response)
+    public function setRequestLifecycleVariables(Request $request, Response $response): void
     {
         $this->setAppName(config('app.name') ?? 'Laravel');
         $this->setChannel();
@@ -227,7 +227,7 @@ class CaptureRequestLifecycle
         $this->setStart(Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'));
         $this->setEnd(now()->format('Y-m-d H:i.s.u'));
         $this->setPerformance(round(microtime(true) - $this->getStartMicroTimestamp($request), 6));
-        $this->setResponse($response->content());
+        $this->setResponse($response->getContent());
         $this->setMessage();
         $this->setTimestamp(now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'));
         $this->setExtra();
@@ -240,7 +240,7 @@ class CaptureRequestLifecycle
      *
      * @return array
      */
-    public function captureLifecycle()
+    public function captureLifecycle(): array
     {
         return [
             '@timestamp'  => $this->timestamp,
