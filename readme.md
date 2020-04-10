@@ -50,7 +50,7 @@
         // 日志存储路径，及日志文件命名
         'path'   => env('DAILY_LARALOG_STORAGE_PATH', storage_path('logs/laralog-winapp-api.log')),
         // 指定使用的日志格式化组件类
-        'tap'    => [Shallowman\Laralog\Formatter\LaralogFormatter::class],
+        'tap'    => [\Shallowman\Laralog\Formatter\LaralogFormatter::class],
         'level'  => 'info',
         // 日志文件保留天数
         'days'   => 7,
