@@ -48,7 +48,7 @@
         // channel 名称，要与数组键名保持一致
         'name'   => 'daily',
         // 日志存储路径，及日志文件命名
-        'path'   => storage_path('logs/laralog-winapp-api.log'),
+        'path'   => env('DAILY_LARALOG_STORAGE_PATH', storage_path('logs/laralog-winapp-api.log')),
         // 指定使用的日志格式化组件类
         'tap'    => [Shallowman\Laralog\Formatter\LaralogFormatter::class],
         'level'  => 'info',
@@ -71,6 +71,8 @@
         ],
     ];
     ```
+    
+ - 配置日志存储路径，在 `.env` 文件中新增配置 `DAILY_LARALOG_STRORAGE_PATH=/path/to/laralog`
 
 ## `Laravel` 开发时如何记日志
 
