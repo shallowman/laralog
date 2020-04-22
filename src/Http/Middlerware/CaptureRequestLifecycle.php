@@ -83,7 +83,7 @@ class CaptureRequestLifecycle
     public function terminate($request, $response): void
     {
         $this->setRequestLifecycleVariables($request, $response);
-        $this->log->info(null, $this->captureLifecycle());
+        $this->log->info('', $this->captureLifecycle());
     }
 
     private function getStartMicroTimestamp(Request $request)
