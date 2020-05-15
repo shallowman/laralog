@@ -1,6 +1,5 @@
 <?php
 
-
 namespace Shallowman\Laralog\Http\Middleware;
 
 use Carbon\Carbon;

@@ -3,7 +3,6 @@
 
 namespace Shallowman\Laralog\Formatter;
 
-
 class LaralogFormatter
 {
     /**
