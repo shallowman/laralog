@@ -16,6 +16,8 @@
     ],
     "require": {
         "php": ">=7",
+        "illuminate/log": "5.6.x|5.7.x|5.8.x|6.0.x",
+        "illuminate/http": "5.6.x|5.7.x|5.8.x|6.0.x",
         "illuminate/support": "5.6.x|5.7.x|5.8.x|6.0.x"
     },
     "autoload": {

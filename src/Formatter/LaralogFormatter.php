@@ -1,12 +1,13 @@
 <?php
 
-
 namespace Shallowman\Laralog\Formatter;
+
+use Monolog\Logger;
 
 class LaralogFormatter
 {
     /**
-     * @param \Monolog\Logger $logger
+     * @param Logger $logger
      */
     public function __invoke($logger)
     {

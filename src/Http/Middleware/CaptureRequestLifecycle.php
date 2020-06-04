@@ -75,8 +75,8 @@ class CaptureRequestLifecycle
     }
 
     /**
-     * @param  \Illuminate\Http\Request                   $request
-     * @param  \Symfony\Component\HttpFoundation\Response $response
+     * @param Request  $request
+     * @param Response $response
      * Capture http lifecycle context and write to log with json format
      */
     public function terminate($request, $response): void
