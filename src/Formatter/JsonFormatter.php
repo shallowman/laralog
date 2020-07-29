@@ -30,7 +30,7 @@ class JsonFormatter extends MonologJsonFormatter
         $context = $record['context'] ?? [];
         $record = $this->customize($record);
         $formatContext = $this->filterDuplicateKeys($context, array_keys($record));
-        return $this->toJson(array_merge($record, $formatContext)).'\n';
+        return $this->toJson(array_merge($record, $formatContext)) . PHP_EOL;
     }
 
     public function filterDuplicateKeys(array $context, array $keys): array
@@ -50,28 +50,28 @@ class JsonFormatter extends MonologJsonFormatter
     public function customize(array $record): array
     {
         return [
-            '@timestamp'  => $this->getFriendlyElasticSearchTimestamp(),
-            'app'         => config('app.name') ?? self::DEFAULT_APP_NAME,
-            'env'         => config('app.env') ?? self::DEFAULT_APP_ENV,
-            'level'       => $record['level_name'] ?? self::DEFAULT_LOG_LEVEL,
-            'logChannel'  => $record['channel'] ?? self::DEFAULT_LOG_CHANNEL,
-            'channel'     => 'frame',
-            'uri'         => '',
-            'method'      => '',
-            'ip'          => '',
-            'platform'    => '',
-            'version'     => '',
-            'os'          => '',
-            'tag'         => '',
-            'start'       => Carbon::createFromTimestampMs($this->getStartMicroTimestamp() * 1000)->format('Y-m-d H:i:s.u'),
-            'end'         => now()->format('Y-m-d H:i:s.u'),
-            'parameters'  => '',
+            '@timestamp' => $this->getFriendlyElasticSearchTimestamp(),
+            'app' => config('app.name') ?? self::DEFAULT_APP_NAME,
+            'env' => config('app.env') ?? self::DEFAULT_APP_ENV,
+            'level' => $record['level_name'] ?? self::DEFAULT_LOG_LEVEL,
+            'logChannel' => $record['channel'] ?? self::DEFAULT_LOG_CHANNEL,
+            'channel' => 'frame',
+            'uri' => '',
+            'method' => '',
+            'ip' => '',
+            'platform' => '',
+            'version' => '',
+            'os' => '',
+            'tag' => '',
+            'start' => Carbon::createFromTimestampMs($this->getStartMicroTimestamp() * 1000)->format('Y-m-d H:i:s.u'),
+            'end' => now()->format('Y-m-d H:i:s.u'),
+            'parameters' => '',
             'performance' => round(microtime(true) - $this->getStartMicroTimestamp(), 6),
-            'response'    => '',
-            'extra'       => $this->handleExtra($record['context'] ?? []),
-            'msg'         => $record['message'],
-            'headers'     => '',
-            'hostname'    => gethostname() ?: self::UNKNOWN_HOST,
+            'response' => '',
+            'extra' => $this->handleExtra($record['context'] ?? []),
+            'msg' => $record['message'],
+            'headers' => '',
+            'hostname' => gethostname() ?: self::UNKNOWN_HOST,
         ];
     }
 
