@@ -18,6 +18,10 @@ class JsonFormatter extends MonologJsonFormatter
 
     public const UNKNOWN_HOST = 'UNKNOWN HOST';
 
+    private $record;
+
+    private $context;
+
     /**
      * Rewrite monolog json formatter
      *
@@ -27,29 +31,32 @@ class JsonFormatter extends MonologJsonFormatter
      */
     public function format(array $record): string
     {
-        $context = $record['context'] ?? [];
-        $record = $this->customize($record);
-        $formatContext = $this->filterDuplicateKeys($context, array_keys($record));
-        return $this->toJson(array_merge($record, $formatContext)) . PHP_EOL;
+        $this->setContext($record['context'] ?? []);
+        $this->setRecord($record);
+        $this->mergeRecord();
+        return $this->toJson($this->record) . PHP_EOL;
     }
 
-    public function filterDuplicateKeys(array $context, array $keys): array
+    /**
+     * Merge context to record array
+     */
+    protected function mergeRecord(): void
     {
-        return array_filter($context, static function ($key) use ($keys) {
-            return in_array($key, $keys, true);
-        }, ARRAY_FILTER_USE_KEY);
+        $keys = array_keys($this->record);
+        $this->record = array_merge($this->record, array_filter($this->context, static function ($v, $k) use ($keys) {
+            return \in_array($k, $keys, true) && \is_string($v);
+        }, ARRAY_FILTER_USE_BOTH));
     }
 
     /**
      * Customize log record content
      *
      * @param array $record
-     *
-     * @return array
+     * @return void
      */
-    public function customize(array $record): array
+    public function setRecord(array $record): void
     {
-        return [
+        $this->record = [
             '@timestamp' => $this->getFriendlyElasticSearchTimestamp(),
             'app' => config('app.name') ?? self::DEFAULT_APP_NAME,
             'env' => config('app.env') ?? self::DEFAULT_APP_ENV,
@@ -109,5 +116,13 @@ class JsonFormatter extends MonologJsonFormatter
         }
 
         return $this->toJson($context ?? [], true);
+    }
+
+    /**
+     * @param array $context
+     */
+    private function setContext(array $context): void
+    {
+        $this->context = $context;
     }
 }
