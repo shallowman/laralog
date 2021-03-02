@@ -16,9 +16,9 @@
     ],
     "require": {
         "php": ">=7",
-        "illuminate/log": "5.6.x|5.7.x|5.8.x|6.x|7.x",
-        "illuminate/http": "5.6.x|5.7.x|5.8.x|6.x|7.x",
-        "illuminate/support": "5.6.x|5.7.x|5.8.x|6.x|7.x"
+        "illuminate/log": "^6.20.14",
+        "illuminate/http": "^6.20.14",
+        "illuminate/support": "^6.20.14"
     },
     "autoload": {
         "psr-4": {
@@ -38,7 +38,6 @@
         }
     },
     "require-dev": {
-        "laravel/framework": "^5.6",
         "phpunit/phpunit": "^7.0",
         "roave/security-advisories": "dev-master"
     },
