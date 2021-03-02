@@ -1,6 +1,6 @@
 {
     "name": "shallowman/laralog",
-    "description": "A middleware which could collect the log with json format of laravel application, including everyone request information。It's very friendly to harvest of filebeat",
+    "description": "A middleware for Laravel framework which is a logging tool,that can capture every one HTTP request and record the details。The middleware default formatter is json formatter.",
     "keywords": [
         "laravel",
         "log",
@@ -16,9 +16,9 @@
     ],
     "require": {
         "php": ">=7",
-        "illuminate/log": "^6.20.14",
-        "illuminate/http": "^6.20.14",
-        "illuminate/support": "^6.20.14"
+        "illuminate/log": ">=5.6",
+        "illuminate/http": ">=5.6",
+        "illuminate/support": ">=5.6"
     },
     "autoload": {
         "psr-4": {
