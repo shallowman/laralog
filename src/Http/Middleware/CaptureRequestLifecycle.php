@@ -5,6 +5,7 @@ namespace Shallowman\Laralog\Http\Middleware;
 use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 use Shallowman\Laralog\LaraLogger;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -75,7 +76,7 @@ class CaptureRequestLifecycle
     }
 
     /**
-     * @param Request  $request
+     * @param Request $request
      * @param Response $response
      * Capture http lifecycle context and write to log with json format
      */
@@ -210,6 +211,11 @@ class CaptureRequestLifecycle
 
     public function setRequestLifecycleVariables(Request $request, Response $response): void
     {
+        $uri = $request->getUri();
+        $parameters = collect($request->except(config('laralog.except')))->toJson();
+        if (self::isExceptUri($uri)) {
+            $parameters = '';
+        }
         $this->setAppName(config('app.name') ?? 'Laravel');
         $this->setChannel();
         $this->setEnv(config('app.env') ?? 'Unknown');
@@ -218,12 +224,14 @@ class CaptureRequestLifecycle
         $this->setOs();
         $this->setPlatform();
         $this->setTag();
-        $this->setUri($request->getUri());
+        $this->setUri($uri);
         $this->setMethod($request->getMethod());
         $this->setIp(implode(',', $request->getClientIps()));
         $this->setVersion();
-        $this->setParameters(collect($request->except(config('laralog.except')))->toJson());
-        $this->setStart(Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'));
+        $this->setParameters($parameters);
+        $this->setStart(
+            Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u')
+        );
         $this->setEnd(now()->format('Y-m-d H:i.s.u'));
         $this->setPerformance(round(microtime(true) - $this->getStartMicroTimestamp($request), 6));
         $this->setResponse($response->getContent());
@@ -242,28 +250,33 @@ class CaptureRequestLifecycle
     public function captureLifecycle(): array
     {
         return [
-            '@timestamp'  => $this->timestamp,
-            'app'         => $this->app,
-            'env'         => $this->env,
-            'channel'     => $this->channel,
-            'logChannel'  => $this->logChannel,
-            'uri'         => $this->uri,
-            'method'      => $this->method,
-            'ip'          => $this->ip,
-            'platform'    => $this->platform,
-            'version'     => $this->version,
-            'os'          => $this->os,
-            'level'       => $this->level,
-            'tag'         => $this->tag,
-            'start'       => $this->start,
-            'end'         => $this->end,
-            'parameters'  => $this->parameters,
+            '@timestamp' => $this->timestamp,
+            'app' => $this->app,
+            'env' => $this->env,
+            'channel' => $this->channel,
+            'logChannel' => $this->logChannel,
+            'uri' => $this->uri,
+            'method' => $this->method,
+            'ip' => $this->ip,
+            'platform' => $this->platform,
+            'version' => $this->version,
+            'os' => $this->os,
+            'level' => $this->level,
+            'tag' => $this->tag,
+            'start' => $this->start,
+            'end' => $this->end,
+            'parameters' => $this->parameters,
             'performance' => $this->performance,
-            'msg'         => $this->msg,
-            'response'    => $this->response,
-            'extra'       => $this->extra,
-            'headers'     => $this->headers,
-            'hostname'    => $this->hostname,
+            'msg' => $this->msg,
+            'response' => $this->response,
+            'extra' => $this->extra,
+            'headers' => $this->headers,
+            'hostname' => $this->hostname,
         ];
+    }
+
+    public static function isExceptUri(string $uri): bool
+    {
+        return Str::contains($uri, config('laralog.except.uri'));
     }
 }
