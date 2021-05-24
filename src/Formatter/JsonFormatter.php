@@ -43,9 +43,16 @@ class JsonFormatter extends MonologJsonFormatter
     protected function mergeRecord(): void
     {
         $keys = array_keys($this->record);
-        $this->record = array_merge($this->record, array_filter($this->context, static function ($v, $k) use ($keys) {
-            return \in_array($k, $keys, true) && \is_string($v);
-        }, ARRAY_FILTER_USE_BOTH));
+        $this->record = array_merge(
+            $this->record,
+            array_filter(
+                $this->context,
+                static function ($v, $k) use ($keys) {
+                    return in_array($k, $keys, true) && is_string($v);
+                },
+                ARRAY_FILTER_USE_BOTH
+            )
+        );
     }
 
     /**
@@ -76,7 +83,7 @@ class JsonFormatter extends MonologJsonFormatter
             'performance' => round(microtime(true) - $this->getStartMicroTimestamp(), 6),
             'response' => '',
             'extra' => $this->handleExtra($record['context'] ?? []),
-            'msg' => $record['message'],
+            'msg' => !is_string($record['message']) ? serialize($record['message']) : $record['message'],
             'headers' => '',
             'hostname' => gethostname() ?: self::UNKNOWN_HOST,
         ];

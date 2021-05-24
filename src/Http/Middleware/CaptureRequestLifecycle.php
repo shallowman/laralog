@@ -212,9 +212,9 @@ class CaptureRequestLifecycle
     public function setRequestLifecycleVariables(Request $request, Response $response): void
     {
         $uri = $request->getUri();
-        $parameters = collect($request->except(config('laralog.except')))->toJson();
-        if (self::isExceptUri($uri)) {
-            $parameters = '';
+        $responseContext = $response->getContent();
+        if (self::isExceptedResponseUri($uri)) {
+            $responseContext = '';
         }
         $this->setAppName(config('app.name') ?? 'Laravel');
         $this->setChannel();
@@ -228,13 +228,13 @@ class CaptureRequestLifecycle
         $this->setMethod($request->getMethod());
         $this->setIp(implode(',', $request->getClientIps()));
         $this->setVersion();
-        $this->setParameters($parameters);
+        $this->setParameters(collect($request->except(config('laralog.except.fields')))->toJson());
         $this->setStart(
             Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u')
         );
         $this->setEnd(now()->format('Y-m-d H:i.s.u'));
         $this->setPerformance(round(microtime(true) - $this->getStartMicroTimestamp($request), 6));
-        $this->setResponse($response->getContent());
+        $this->setResponse($responseContext);
         $this->setMessage();
         $this->setTimestamp(now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'));
         $this->setExtra();
@@ -275,7 +275,7 @@ class CaptureRequestLifecycle
         ];
     }
 
-    public static function isExceptUri(string $uri): bool
+    public static function isExceptedResponseUri(string $uri): bool
     {
         return Str::contains($uri, config('laralog.except.uri'));
     }

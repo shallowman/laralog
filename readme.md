@@ -59,20 +59,32 @@
     ],
     ```
     
-- 配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `except` 键对应的数组中，增加待过滤的请求参数键值
+- 配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `fields` 键对应的数组中，增加待过滤的请求参数键值
 
     ```php
     return [
         'except' => [
-            'password',
-            'password_information',
-            'password_confirm',
-            'something_to_except',
+            'fields'=>[
+                'password',
+                'password_information',
+                'password_confirm',
+                'something_to_except',
+            ],            
         ],
     ];
     ```
-    
- - 配置日志存储路径，在 `.env` 文件中新增配置 `DAILY_LARALOG_STRORAGE_PATH=/path/to/laralog`
+- 配置过滤不捕捉特定 uri 的返回值，在 `config/laralog.php` 中 'uri' 键对应的数据中，增加待过滤的 `uri`
+     ```php
+        return [
+            'except' => [
+                'uri'=>[
+                    '/welcome',
+                    '/uri/to/filter'
+                ],            
+            ],
+        ];
+     ```
+- 配置日志存储路径，在 `.env` 文件中新增配置 `DAILY_LARALOG_STRORAGE_PATH=/path/to/laralog`
 
 ## `Laravel` 开发时如何记日志
 
