@@ -37,6 +37,7 @@
 
     ```dotenv
     LOG_CHANNEL=daily
+    DAILY_LARALOG_STORAGE_PATH=/path/to/log/laralog-app-%s.log
     ```
     
 - 在 `config/logging.php` 中，设置默认日志频道 `channel` 为 `daily` 的日志组件，添加如下配置声明 
@@ -48,7 +49,8 @@
         // channel 名称，要与数组键名保持一致
         'name'   => 'daily',
         // 日志存储路径，及日志文件命名
-        'path'   => env('DAILY_LARALOG_STORAGE_PATH', storage_path('logs/laralog.log')),
+        // 增加 Hostname 作为日志存储文件名后缀
+        'path'   => sprintf(env('DAILY_LARALOG_STORAGE_PATH', storage_path('logs/laralog-%s.log')), gethostname()),
         // 指定使用的日志格式化组件类
         'tap'    => [\Shallowman\Laralog\Formatter\LaralogFormatter::class],
         'level'  => 'info',
