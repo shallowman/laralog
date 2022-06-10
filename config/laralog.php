@@ -1,15 +1,17 @@
 <?php
 
 return [
-    'except' => [
-        'fields' => [
-            'password',
-            'password_information',
-            'password_confirm',
-        ],
-        // uri to avoid middleware capture the http lifecycle information
-        'uri' => [
-
-        ],
-    ],
+    'capture' => [
+        'except' => [
+            'http_req_fields' => [
+                'password',
+                'password_information',
+                'password_confirm',
+            ],
+            // the uri to avoid middleware capture
+            'uri' => [
+                '/welcome',
+            ]
+        ]
+    ]
 ];

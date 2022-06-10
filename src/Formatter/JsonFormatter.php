@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shallowman\Laralog\Formatter;
 
 use Carbon\Carbon;
@@ -8,45 +10,37 @@ use Monolog\Formatter\JsonFormatter as MonologJsonFormatter;
 
 class JsonFormatter extends MonologJsonFormatter
 {
-    public const DEFAULT_APP_NAME = 'LARAVEL';
-
-    public const DEFAULT_LOG_LEVEL = 'INFO';
-
-    public const DEFAULT_APP_ENV = 'PRODUCTION';
-
-    public const DEFAULT_LOG_CHANNEL = 'DEFAULT';
-
-    public const UNKNOWN_HOST = 'UNKNOWN HOST';
-
-    private $record;
-
-    private $context;
+    // default app name if not set
+    public const DEFAULT_APP_NAME = 'laravel';
+    // default log level if not set
+    public const DEFAULT_LOG_LEVEL = 'info';
+    // default app environment if not set
+    public const DEFAULT_APP_ENV = 'local';
+    // default log channel if not set
+    public const DEFAULT_LOG_CHANNEL = 'default';
+    // default host name if not detect
+    public const UNKNOWN_HOST = 'unknown_host';
 
     /**
-     * Rewrite monolog json formatter
-     *
-     * @param array $record
-     *
-     * @return string
+     * override parent func.
      */
     public function format(array $record): string
     {
-        $this->setContext($record['context'] ?? []);
-        $this->setRecord($record);
-        $this->mergeRecord();
-        return $this->toJson($this->record) . PHP_EOL;
+        $normalizedRecord = $this->normalizeRecord($record);
+        $normalized = $this->tailor($normalizedRecord, $record['context'] ?? []);
+
+        return $this->toJson($normalized) . PHP_EOL;
     }
 
     /**
-     * Merge context to record array
+     * tailor record array.
      */
-    protected function mergeRecord(): void
+    public function tailor(array $normalizedRecord, array $context): array
     {
-        $keys = array_keys($this->record);
-        $this->record = array_merge(
-            $this->record,
-            array_filter(
-                $this->context,
+        $keys = array_keys($normalizedRecord);
+
+        return array_merge($normalizedRecord, array_filter(
+                $context,
                 static function ($v, $k) use ($keys) {
                     return in_array($k, $keys, true) && is_string($v);
                 },
@@ -56,15 +50,14 @@ class JsonFormatter extends MonologJsonFormatter
     }
 
     /**
-     * Customize log record content
+     * normalize record data using standard definition.
      *
-     * @param array $record
      * @return void
      */
-    public function setRecord(array $record): void
+    public function normalizeRecord(array $record): array
     {
-        $this->record = [
-            '@timestamp' => $this->getFriendlyElasticSearchTimestamp(),
+        return [
+            '@timestamp' => $this->getCurrentESTimestamp(),
             'app' => config('app.name') ?? self::DEFAULT_APP_NAME,
             'env' => config('app.env') ?? self::DEFAULT_APP_ENV,
             'level' => $record['level_name'] ?? self::DEFAULT_LOG_LEVEL,
@@ -77,59 +70,52 @@ class JsonFormatter extends MonologJsonFormatter
             'version' => '',
             'os' => '',
             'tag' => '',
-            'start' => Carbon::createFromTimestampMs($this->getStartMicroTimestamp() * 1000)->format('Y-m-d H:i:s.u'),
+            'start' => Carbon::createFromTimestampMs(self::getStartMicroTimestamp() * 1000)->format('Y-m-d H:i:s.u'),
             'end' => now()->format('Y-m-d H:i:s.u'),
             'parameters' => '',
-            'performance' => round(microtime(true) - $this->getStartMicroTimestamp(), 6),
+            'performance' => round(microtime(true) - self::getStartMicroTimestamp(), 6),
             'response' => '',
-            'extra' => $this->handleExtra($record['context'] ?? []),
+            'extra' => $this->normalizeExtra($record['context'] ?? []),
             'msg' => !is_string($record['message']) ? serialize($record['message']) : $record['message'],
             'headers' => '',
             'hostname' => gethostname() ?: self::UNKNOWN_HOST,
         ];
     }
 
-    private function getStartMicroTimestamp(): float
+    public static function getStartMicroTimestamp(): float
     {
         if (defined('LARAVEL_START')) {
             return LARAVEL_START;
         }
 
-        if ($timestamp = request()->server('REQUEST_TIME_FLOAT')) {
-            return $timestamp;
+        if (!function_exists('request')) {
+            return microtime(true);
+        }
+
+        $timestamp = request()->server('REQUEST_TIME_FLOAT');
+        if (is_float($timestamp) || (is_string($timestamp) && '' !== $timestamp)) {
+            return (float)$timestamp;
         }
 
         return microtime(true);
     }
 
-    public function getFriendlyElasticSearchTimestamp(): string
+    public static function getCurrentESTimestamp(): string
     {
         return now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z');
     }
 
     /**
-     * Add exception message and trace info to log record when meet exception
-     *
-     * @param array $context
-     *
-     * @return string
+     * capture and render exception traces.
      */
-    public function handleExtra(array $context): string
+    public function normalizeExtra(array $context): string
     {
         if (isset($context['exception']) && ($context['exception'] instanceof Exception)) {
-            $context['stacktrace'] = $context['exception']->getTrace();
+            $context['stacktrace'] = $context['exception']->getTraceAsString();
             $context['error_msg'] = $context['exception']->getMessage();
             unset($context['exception']);
         }
 
         return $this->toJson($context ?? [], true);
-    }
-
-    /**
-     * @param array $context
-     */
-    private function setContext(array $context): void
-    {
-        $this->context = $context;
     }
 }

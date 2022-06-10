@@ -1,15 +1,14 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shallowman\Laralog\Formatter;
 
 use Monolog\Logger;
 
 class LaralogFormatter
 {
-    /**
-     * @param Logger $logger
-     */
-    public function __invoke($logger)
+    public function __invoke(Logger $logger)
     {
         foreach ($logger->getHandlers() as $handler) {
             $handler->setFormatter(new JsonFormatter());
