@@ -1,61 +1,19 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Shallowman\Laralog\Http\Middleware;
 
 use Carbon\Carbon;
-use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Str;
+use Psr\Log\LoggerInterface;
 use Shallowman\Laralog\LaraLogger;
-use Symfony\Component\HttpFoundation\Response;
 
 class CaptureRequestLifecycle
 {
-    protected $env;
-
-    protected $app;
-
-    protected $channel;
-
-    protected $level;
-
-    protected $uri;
-
-    protected $logChannel;
-
-    protected $method;
-
-    protected $ip;
-
-    protected $version;
-
-    protected $platform;
-
-    protected $os;
-
-    protected $tag;
-
-    protected $start;
-
-    protected $end;
-
-    protected $performance;
-
-    protected $msg;
-
-    protected $response;
-
-    protected $parameters;
-
-    protected $log;
-
-    protected $headers;
-
-    protected $hostname;
-
-    public $extra;
-
-    private $timestamp;
+    protected LoggerInterface $log;
 
     public function __construct(LaraLogger $log)
     {
@@ -63,220 +21,74 @@ class CaptureRequestLifecycle
     }
 
     /**
-     * Middleware to hand http request from this to next
+     * terminate middleware to capture and compose http lifecycle info.
      *
-     * @param Request $request
-     * @param Closure $next
-     *
-     * @return mixed
-     */
-    public function handle(Request $request, Closure $next)
-    {
-        return $next($request);
-    }
-
-    /**
-     * @param Request $request
-     * @param Response $response
-     * Capture http lifecycle context and write to log with json format
+     * @param $request
+     * @param $response
      */
     public function terminate($request, $response): void
     {
-        $this->setRequestLifecycleVariables($request, $response);
-        $this->log->info('', $this->captureLifecycle());
+        $context = $this->captureAndComposeRequiredVariables($request, $response);
+        $this->log->info('', $context);
     }
 
-    private function getStartMicroTimestamp(Request $request)
+    /**
+     * retrieve the start time of laravel framework or http-request income.
+     */
+    public static function getStartMicroTimestamp(Request $request): float
     {
         if (defined('LARAVEL_START')) {
             return LARAVEL_START;
         }
-
-        if ($timestamp = $request->server('REQUEST_TIME_FLOAT')) {
-            return $timestamp;
+        $timestamp = $request->server('REQUEST_TIME_FLOAT');
+        if (is_float($timestamp) || (is_string($timestamp) && '' !== $timestamp)) {
+            return (float)$timestamp;
         }
 
         return microtime(true);
     }
 
-    private function setTimestamp(string $timestamp): void
-    {
-        $this->timestamp = $timestamp;
-    }
-
-    public function setParameters(string $parameters): void
-    {
-        $this->parameters = $parameters;
-    }
-
-    public function setExtra(string $extra = ''): void
-    {
-        $this->extra = $extra;
-    }
-
-    public function setPlatform(string $platform = ''): void
-    {
-        $this->platform = $platform;
-    }
-
-    public function setVersion(string $version = ''): void
-    {
-        $this->version = $version;
-    }
-
-    public function setOs(string $os = ''): void
-    {
-        $this->os = $os;
-    }
-
-    public function setTag(string $tag = ''): void
-    {
-        $this->tag = $tag;
-    }
-
-    protected function setAppName(string $app): void
-    {
-        $this->app = $app;
-    }
-
-    protected function setEnv(string $env): void
-    {
-        $this->env = $env;
-    }
-
-    protected function setChannel(string $channel = 'app'): void
-    {
-        $this->channel = $channel;
-    }
-
-    protected function setLevel(string $level = 'INFO'): void
-    {
-        $this->level = $level;
-    }
-
-    protected function setIp(string $ip): void
-    {
-        $this->ip = $ip;
-    }
-
-    protected function setUri(string $uri): void
-    {
-        $this->uri = $uri;
-    }
-
-    protected function setMethod(string $method): void
-    {
-        $this->method = $method;
-    }
-
-    protected function setStart(string $start): void
-    {
-        $this->start = $start;
-    }
-
-    protected function setEnd(string $end): void
-    {
-        $this->end = $end;
-    }
-
-    protected function setResponse(string $response): void
-    {
-        $this->response = $response;
-    }
-
-    protected function setLogChannel(string $logChannel = 'middleware'): void
-    {
-        $this->logChannel = $logChannel;
-    }
-
-    protected function setPerformance(float $performance): void
-    {
-        $this->performance = $performance;
-    }
-
-    public function setMessage(string $message = ''): void
-    {
-        $this->msg = $message;
-    }
-
-    protected function setHeaders(string $headers): void
-    {
-        $this->headers = $headers;
-    }
-
-    protected function setHostname(string $hostname): void
-    {
-        $this->hostname = $hostname;
-    }
-
-    public function setRequestLifecycleVariables(Request $request, Response $response): void
+    public function captureAndComposeRequiredVariables(Request $request, Response $response): array
     {
         $uri = $request->getUri();
-        $responseContext = $response->getContent();
-        if (self::isExceptedResponseUri($uri)) {
-            $responseContext = '';
-        }
-        $this->setAppName(config('app.name') ?? 'Laravel');
-        $this->setChannel();
-        $this->setEnv(config('app.env') ?? 'Unknown');
-        $this->setLogChannel();
-        $this->setLevel();
-        $this->setOs();
-        $this->setPlatform();
-        $this->setTag();
-        $this->setUri($uri);
-        $this->setMethod($request->getMethod());
-        $this->setIp(implode(',', $request->getClientIps()));
-        $this->setVersion();
-        $this->setParameters(collect($request->except(config('laralog.except.fields')))->toJson());
-        $this->setStart(
-            Carbon::createFromTimestampMs($this->getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u')
-        );
-        $this->setEnd(now()->format('Y-m-d H:i.s.u'));
-        $this->setPerformance(round(microtime(true) - $this->getStartMicroTimestamp($request), 6));
-        $this->setResponse($responseContext);
-        $this->setMessage();
-        $this->setTimestamp(now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'));
-        $this->setExtra();
-        $this->setHeaders(collect($request->headers->all())->toJson());
-        $this->setHostname(gethostname() ?: 'Unknown Hostname');
-    }
 
-    /**
-     * Capture request lifecycle content
-     *
-     * @return array
-     */
-    public function captureLifecycle(): array
-    {
         return [
-            '@timestamp' => $this->timestamp,
-            'app' => $this->app,
-            'env' => $this->env,
-            'channel' => $this->channel,
-            'logChannel' => $this->logChannel,
-            'uri' => $this->uri,
-            'method' => $this->method,
-            'ip' => $this->ip,
-            'platform' => $this->platform,
-            'version' => $this->version,
-            'os' => $this->os,
-            'level' => $this->level,
-            'tag' => $this->tag,
-            'start' => $this->start,
-            'end' => $this->end,
-            'parameters' => $this->parameters,
-            'performance' => $this->performance,
-            'msg' => $this->msg,
-            'response' => $this->response,
-            'extra' => $this->extra,
-            'headers' => $this->headers,
-            'hostname' => $this->hostname,
+            '@timestamp' => now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'),
+            'app' => config('app.name') ?? $request->getHttpHost(),
+            'env' => config('app.env') ?? 'test',
+            'level' => 'info',
+            'logChannel' => 'middleware',
+            'channel' => 'frame',
+            'uri' => $uri,
+            'method' => $request->getMethod(),
+            'ip' => implode(',', $request->getClientIps()),
+            'platform' => '',
+            'version' => '',
+            'os' => '',
+            'tag' => '',
+            'start' => Carbon::createFromTimestampMs(static::getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'),
+            'end' => now()->format('Y-m-d H:i:s.u'),
+            'parameters' => collect($request->except(config('laralog.capture.except.http_req_fields')))->toJson(),
+            'performance' => round(microtime(true) - static::getStartMicroTimestamp($request), 6),
+            'response' => self::shouldCapture($uri) ? '' : $response->getContent(),
+            'extra' => '',
+            'msg' => '',
+            'headers' => '',
+            'hostname' => gethostname() ?: 'unknown_host',
         ];
     }
 
-    public static function isExceptedResponseUri(string $uri): bool
+    /**
+     * determine if the uri should capture the response body info or not.
+     */
+    public static function shouldCapture(string $uri): bool
     {
-        return Str::contains($uri, config('laralog.except.uri'));
+        $exceptUris = config('laralog.capture.except.uri');
+
+        if (null === $exceptUris || (is_array($exceptUris) && empty($exceptUris))) {
+            return false;
+        }
+
+        return Str::contains($uri, $exceptUris);
     }
 }
