@@ -2,9 +2,9 @@
 
 namespace Shallowman\Laralog\Tests;
 
+use Illuminate\Http\Request;
 use PHPUnit\Framework\TestCase;
 use Shallowman\Laralog\Formatter\JsonFormatter;
-use Illuminate\Http\Request;
 
 class JsonFormatterTest extends TestCase
 {
@@ -21,6 +21,7 @@ class JsonFormatterTest extends TestCase
     {
         app()->bind('request', function () {
             $_SERVER['REQUEST_TIME_FLOAT'] = 1234.56;
+
             return Request::createFromGlobals();
         });
         $this->assertSame(1234.56, JsonFormatter::getStartMicroTimestamp());
@@ -39,8 +40,8 @@ class JsonFormatterTest extends TestCase
             'redundancy' => 'redundancy',
             'redundancy_again' => [
                 'test',
-                new \stdClass()
-            ]
+                new \stdClass(),
+            ],
         ];
         $formatter = new JsonFormatter();
         $this->assertArrayNotHasKey('exception', json_decode($formatter->normalizeExtra($context), true));
