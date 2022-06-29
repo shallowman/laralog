@@ -29,7 +29,7 @@ class JsonFormatter extends MonologJsonFormatter
         $normalizedRecord = $this->normalizeRecord($record);
         $normalized = $this->tailor($normalizedRecord, $record['context'] ?? []);
 
-        return $this->toJson($normalized) . PHP_EOL;
+        return $this->toJson($normalized).PHP_EOL;
     }
 
     /**
@@ -94,7 +94,7 @@ class JsonFormatter extends MonologJsonFormatter
 
         $timestamp = request()->server('REQUEST_TIME_FLOAT');
         if (is_float($timestamp) || (is_string($timestamp) && '' !== $timestamp)) {
-            return (float)$timestamp;
+            return (float) $timestamp;
         }
 
         return microtime(true);
