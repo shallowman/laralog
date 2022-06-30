@@ -6,11 +6,11 @@ namespace Shallowman\Laralog\Http\Middleware;
 
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Str;
 use function mb_substr;
 use Psr\Log\LoggerInterface;
 use Shallowman\Laralog\LaraLogger;
+use Symfony\Component\HttpFoundation\Response;
 
 class CaptureRequestLifecycle
 {
