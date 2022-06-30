@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Shallowman\Laralog\Formatter;
 
-use Monolog\Logger;
+use Illuminate\Log\Logger;
 
 class LaralogFormatter
 {

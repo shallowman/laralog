@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Shallowman\Laralog\Http\Middleware;
 
 use Carbon\Carbon;
+use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use function mb_substr;
@@ -18,16 +19,25 @@ class CaptureRequestLifecycle
 
     public const DEFAULT_CLIPPED_LENGTH = 1000;
 
-    public const SHOULD_TAGS = [
-        'exceptedUri' => 'shouldCapture',
-        'clipped' => 'shouldClipped',
-    ];
+    protected static bool $shouldLabelExceptedUriTag;
+
+    protected static bool $shouldLabelClippedLogTag;
 
     protected LoggerInterface $log;
 
     public function __construct(LaraLogger $log)
     {
         $this->log = $log;
+    }
+
+    /**
+     * Handle an incoming request.
+     *
+     * @return mixed
+     */
+    public function handle(Request $request, Closure $next)
+    {
+        return $next($request);
     }
 
     /**
@@ -60,8 +70,6 @@ class CaptureRequestLifecycle
 
     public function captureAndComposeRequiredVariables(Request $request, Response $response): array
     {
-        $uri = $request->getUri();
-
         return [
             '@timestamp' => now()->setTimezone('UTC')->format('Y-m-d\TH:i:s.u\Z'),
             'app' => config('app.name') ?? $request->getHttpHost(),
@@ -69,22 +77,22 @@ class CaptureRequestLifecycle
             'level' => 'info',
             'logChannel' => 'middleware',
             'channel' => 'frame',
-            'uri' => $uri,
+            'uri' => $request->getUri(),
             'method' => $request->getMethod(),
             'ip' => implode(',', $request->getClientIps()),
             'platform' => '',
             'version' => '',
             'os' => '',
-            'tag' => '',
             'start' => Carbon::createFromTimestampMs(static::getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'),
             'end' => now()->format('Y-m-d H:i:s.u'),
-            'parameters' => self::clipLog(collect($request->except(config('laralog.capture.except.http_req_fields')))->toJson()),
+            'parameters' => self::clipLog(collect($request->except(config('laralog.except.fields')))->toJson()),
             'performance' => round(microtime(true) - static::getStartMicroTimestamp($request), 6),
             'response' => self::shouldCapture() ? '' : self::clipLog($response->getContent()),
             'extra' => '',
             'msg' => '',
             'headers' => '',
             'hostname' => gethostname() ?: 'unknown_host',
+            'tag' => self::label(),
         ];
     }
 
@@ -93,18 +101,18 @@ class CaptureRequestLifecycle
      */
     public static function shouldCapture(): bool
     {
-        $exceptUris = config('laralog.capture.except.uri');
+        $exceptUris = config('laralog.except.uris');
 
         if (null === $exceptUris || (is_array($exceptUris) && empty($exceptUris))) {
             return false;
         }
 
-        return Str::contains(request()->getUri(), $exceptUris);
+        return static::$shouldLabelExceptedUriTag = Str::contains(request()->getUri(), $exceptUris);
     }
 
     public static function shouldClipped(): bool
     {
-        return self::POSITIVE_INFINITY !== config('laralog.log_clipped_length');
+        return static::$shouldLabelClippedLogTag = (self::POSITIVE_INFINITY !== config('laralog.log_clipped_length'));
     }
 
     public static function clipLog(string $log): string
@@ -120,8 +128,15 @@ class CaptureRequestLifecycle
 
     public static function label(): string
     {
-        return implode(',', array_keys(array_filter(self::SHOULD_TAGS, function ($v) {
-            return call_user_func([self::class, $v]);
-        })));
+        $tag = '';
+        if (static::$shouldLabelClippedLogTag) {
+            $tag .= 'clipped';
+        }
+
+        if (static::$shouldLabelExceptedUriTag) {
+            $tag .= ',excludeUri';
+        }
+
+        return $tag;
     }
 }
