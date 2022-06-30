@@ -86,6 +86,11 @@
             ],
         ];
      ```
+- 配置 HTTP 请求 `request` 和 `response` 包体内容超过设置长度的折叠功能（按照 Multibyte 计算），在 `config/laralog.php` 中添加如下键值对（默认不折叠任何长度的日志）
+  ```php
+    log_clipped_length' => env('LARALOG_CLIPPED_LENGTH', CaptureRequestLifecycle::POSITIVE_INFINITY),
+  ```
+  
 - 配置日志存储路径，在 `.env` 文件中新增配置 `DAILY_LARALOG_STRORAGE_PATH=/path/to/laralog`
 
 ## `Laravel` 开发时如何记日志
