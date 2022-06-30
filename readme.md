@@ -61,7 +61,7 @@
     ],
     ```
     
-- 配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `fields` 键对应的数组中，增加待过滤的请求参数键值
+- 配置过滤敏感信息的键值，如需新增过滤的敏感信息，在 `config/laralog.php` 中 `fields` 键对应的数组中增加待过滤的请求参数键值（匹配方式使用精准匹配）。
 
     ```php
     return [
@@ -75,7 +75,7 @@
         ],
     ];
     ```
-- 配置过滤不捕捉特定 uri 的返回值，在 `config/laralog.php` 中 'uri' 键对应的数据中，增加待过滤的 `uri`
+- 配置过滤不捕捉特定 uri 的返回值，在 `config/laralog.php` 中 `uri` 键对应的数组中增加待过滤的 `uri`（匹配方式使用模糊匹配）。
      ```php
         return [
             'except' => [
@@ -86,22 +86,44 @@
             ],
         ];
      ```
-- 配置 HTTP 请求 `request` 和 `response` 包体内容超过设置长度的折叠功能（按照 Multibyte 计算），在 `config/laralog.php` 中添加如下键值对（默认不折叠任何长度的日志）
+- 配置 HTTP 请求 `request` 和 `response` 包体内容超过设置长度的折叠功能（按照 Multibyte 计算），在 `config/laralog.php` 中添加如下键值对（默认不折叠任何长度的日志）。
   ```php
-    log_clipped_length' => env('LARALOG_CLIPPED_LENGTH', CaptureRequestLifecycle::POSITIVE_INFINITY),
+    'log_clipped_length' => env('LARALOG_CLIPPED_LENGTH', CaptureRequestLifecycle::POSITIVE_INFINITY),
   ```
   
 - 配置日志存储路径，在 `.env` 文件中新增配置 `DAILY_LARALOG_STRORAGE_PATH=/path/to/laralog`
 
-## `Laravel` 开发时如何记日志
+
+- 一个完整的 `config/laralog.php` 配置示例如下。
+  ```php
+  <?php
+  
+  return [
+      'except' => [
+          // The fields filled in the blow array will be excluded to print in the log which in the http request body carried items
+          // perfect match
+          'fields' => [
+              'password',
+              'password_information',
+              'password_confirm',
+          ],
+          // The uris filled in the blow array will be excluded to print http response body
+          // Using full fuzzy matching
+          'uris' => [
+              '/welcome',
+          ],
+      ],
+  
+      'log_clipped_length' => env('LARALOG_CLIPPED_LENGTH', \Shallowman\Laralog\Http\Middleware\CaptureRequestLifecycle::POSITIVE_INFINITY),
+  ];
+  ```
+## `Laravel` 应用或接口开发时如何记日志
 
 - 日志记录保持不变，如下使用默认 `channel` 记录日志
-```php
-Log::info('log message', $context);
-```
-
-- 使用自定义 `channel` 写日志
-
-```php
-Log::channel('channel')->info('message', $context);
-```
+    ```php
+    Log::info('log message', $context);
+    ```
+- 使用自定义 `channel` 写日志 (自定义 channel 日志的 driver 需要制定 daily )
+    ```php
+    Log::channel('channel')->info('message', $context);
+    ```
