@@ -19,9 +19,9 @@ class CaptureRequestLifecycle
 
     public const DEFAULT_CLIPPED_LENGTH = 1000;
 
-    protected static bool $shouldLabelExceptedUriTag;
+    protected static bool $shouldLabelExceptedUriTag = false;
 
-    protected static bool $shouldLabelClippedLogTag;
+    protected static bool $shouldLabelClippedLogTag = false;
 
     protected LoggerInterface $log;
 
