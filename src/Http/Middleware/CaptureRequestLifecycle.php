@@ -9,7 +9,6 @@ use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use function mb_substr;
-use Psr\Log\LoggerInterface;
 use Shallowman\Laralog\LaraLogger;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -19,11 +18,11 @@ class CaptureRequestLifecycle
 
     public const DEFAULT_CLIPPED_LENGTH = 1000;
 
-    protected static bool $shouldLabelExceptedUriTag = false;
+    protected static $shouldLabelExceptedUriTag = false;
 
-    protected static bool $shouldLabelClippedLogTag = false;
+    protected static $shouldLabelClippedLogTag = false;
 
-    protected LoggerInterface $log;
+    protected $log;
 
     public function __construct(LaraLogger $log)
     {
