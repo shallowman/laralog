@@ -86,7 +86,7 @@ class CaptureRequestLifecycle
             'end' => now()->format('Y-m-d H:i:s.u'),
             'parameters' => self::clipLog(collect($request->except(config('laralog.except.fields')))->toJson()),
             'performance' => round(microtime(true) - static::getStartMicroTimestamp($request), 6),
-            'response' => self::shouldCapture() ? '' : self::clipLog($response->getContent()),
+            'response' => self::shouldCapture() ? '' : self::clipLog(self::responseToString($response->getContent())),
             'extra' => '',
             'msg' => '',
             'headers' => '',
@@ -107,6 +107,15 @@ class CaptureRequestLifecycle
         }
 
         return static::$shouldLabelExceptedUriTag = Str::contains(request()->getUri(), $exceptUris);
+    }
+
+    public static function responseToString($response): string
+    {
+        if (!is_string($response)) {
+            return var_export($response) ?? '';
+        }
+
+        return $response;
     }
 
     public static function shouldClipped(): bool
