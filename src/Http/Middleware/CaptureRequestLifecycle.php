@@ -118,14 +118,18 @@ class CaptureRequestLifecycle
         return $response;
     }
 
-    public static function shouldClipped(): bool
+    public static function shouldClipped(string $log): bool
     {
-        return static::$shouldLabelClippedLogTag = (self::POSITIVE_INFINITY !== config('laralog.log_clipped_length'));
+        $length = config('laralog.log_clipped_length');
+        $length = is_numeric($length) ? (int) $length : self::DEFAULT_CLIPPED_LENGTH;
+
+        return static::$shouldLabelClippedLogTag = ((self::POSITIVE_INFINITY !== config('laralog.log_clipped_length'))
+            && (mb_strlen($log) > $length));
     }
 
     public static function clipLog(string $log): string
     {
-        if (!self::shouldClipped()) {
+        if (!self::shouldClipped($log)) {
             return $log;
         }
         $length = config('laralog.log_clipped_length');
