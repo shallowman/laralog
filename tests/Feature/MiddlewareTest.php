@@ -83,7 +83,6 @@ class MiddlewareTest extends BaseTestCase
     public function testLogWrite()
     {
         try {
-            $this->reloadApplication();
             $testCase1Context = ['test' => Str::random(100)];
             $testCase2Context = ['error' => Str::random(1077)];
             Log::info('test-info', $testCase1Context);
