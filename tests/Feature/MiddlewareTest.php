@@ -53,7 +53,7 @@ class MiddlewareTest extends BaseTestCase
     public function testCaptureHttpLifecycleLog()
     {
         try {
-            $this->reloadApplication();
+            $this->tearDown();
             $response = $this->get('test/case2');
             $response->assertStatus(200);
             $respContent = $response->getContent();
