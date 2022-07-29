@@ -6,9 +6,10 @@
 >
     <testsuites>
         <testsuite name="Unit">
-            <directory suffix="Test.php">./tests/Unit</directory>
         </testsuite>
     </testsuites>
     <php>
+        <env name="APP_KEY" value="AckfSECXIvnK5r28GVIWUAxmbBSjTsmF"/>
+        <env name="LOG_CHANNEL" value="laralog"/>
     </php>
 </phpunit>

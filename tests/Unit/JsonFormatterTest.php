@@ -1,36 +1,21 @@
 <?php
 
-namespace Shallowman\Laralog\Tests;
+namespace Shallowman\Laralog\Tests\Unit;
 
-use Illuminate\Http\Request;
-use PHPUnit\Framework\TestCase;
 use Shallowman\Laralog\Formatter\JsonFormatter;
+use Shallowman\Laralog\Tests\BaseTestCase;
 
-class JsonFormatterTest extends TestCase
+class JsonFormatterTest extends BaseTestCase
 {
     public function testGetStartMicroTimestampWithSystemTs()
     {
-        app()->bind('request', function () {
-            return Request::createFromGlobals();
-        });
-
-        $this->assertEqualsWithDelta(microtime(true), JsonFormatter::getStartMicroTimestamp(), 500.0);
+        $this->assertEqualsWithDelta(microtime(true), JsonFormatter::getStartMicroTimestamp(), 1000.0);
     }
 
-    public function testGetStartMicroTimestampWithRequestGlobalVars()
+    public function testGetStartMicroTimestamp()
     {
-        app()->bind('request', function () {
-            $_SERVER['REQUEST_TIME_FLOAT'] = 1234.56;
-
-            return Request::createFromGlobals();
-        });
-        $this->assertSame(1234.56, JsonFormatter::getStartMicroTimestamp());
-    }
-
-    public function testGetStartMicroTimestampWithDefinedConst()
-    {
-        define('LARAVEL_START', 123.1);
-        $this->assertSame(123.1, JsonFormatter::getStartMicroTimestamp());
+        define('LARAVEL_START', microtime(true));
+        $this->assertSame(LARAVEL_START, JsonFormatter::getStartMicroTimestamp());
     }
 
     public function testNormalizeExtra()

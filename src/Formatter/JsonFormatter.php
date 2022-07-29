@@ -7,9 +7,12 @@ namespace Shallowman\Laralog\Formatter;
 use Carbon\Carbon;
 use Exception;
 use Monolog\Formatter\JsonFormatter as MonologJsonFormatter;
+use Shallowman\Laralog\Traits\ClipLogTrait;
 
 class JsonFormatter extends MonologJsonFormatter
 {
+    use ClipLogTrait;
+    public const POSITIVE_INFINITY = 'POSITIVE_INFINITY';
     // default app name if not set
     public const DEFAULT_APP_NAME = 'laravel';
     // default log level if not set
@@ -40,12 +43,12 @@ class JsonFormatter extends MonologJsonFormatter
         $keys = array_keys($normalizedRecord);
 
         return array_merge($normalizedRecord, array_filter(
-                $context,
-                static function ($v, $k) use ($keys) {
-                    return in_array($k, $keys, true) && is_string($v);
-                },
-                ARRAY_FILTER_USE_BOTH
-            )
+            $context,
+            static function ($v, $k) use ($keys) {
+                return in_array($k, $keys, true) && is_string($v);
+            },
+            ARRAY_FILTER_USE_BOTH
+        )
         );
     }
 
@@ -69,16 +72,16 @@ class JsonFormatter extends MonologJsonFormatter
             'platform' => '',
             'version' => '',
             'os' => '',
-            'tag' => '',
             'start' => Carbon::createFromTimestampMs(self::getStartMicroTimestamp() * 1000)->format('Y-m-d H:i:s.u'),
             'end' => now()->format('Y-m-d H:i:s.u'),
             'parameters' => '',
             'performance' => round(microtime(true) - self::getStartMicroTimestamp(), 6),
             'response' => '',
-            'extra' => $this->normalizeExtra($record['context'] ?? []),
-            'msg' => !is_string($record['message']) ? serialize($record['message']) : $record['message'],
+            'extra' => self::clipLog($this->normalizeExtra($record['context'] ?? [])),
+            'msg' => self::clipLog(!is_string($record['message']) ? serialize($record['message']) : $record['message']),
             'headers' => '',
             'hostname' => gethostname() ?: self::UNKNOWN_HOST,
+            'tag' => static::label(),
         ];
     }
 

@@ -14,5 +14,8 @@ class ServiceProvider extends LaravelServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/laralog.php', 'laralog');
+        $this->app->singleton(LaraLogger::class, function ($app) {
+            return new LaraLogger($app);
+        });
     }
 }

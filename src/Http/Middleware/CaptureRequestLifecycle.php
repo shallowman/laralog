@@ -8,19 +8,17 @@ use Carbon\Carbon;
 use Closure;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
-use function mb_substr;
 use Shallowman\Laralog\LaraLogger;
+use Shallowman\Laralog\Traits\ClipLogTrait;
 use Symfony\Component\HttpFoundation\Response;
 
 class CaptureRequestLifecycle
 {
+    use ClipLogTrait;
+
     public const POSITIVE_INFINITY = 'POSITIVE_INFINITY';
 
     public const DEFAULT_CLIPPED_LENGTH = 1000;
-
-    protected static $shouldLabelExceptedUriTag = false;
-
-    protected static $shouldLabelClippedLogTag = false;
 
     protected $log;
 
@@ -91,7 +89,7 @@ class CaptureRequestLifecycle
             'msg' => '',
             'headers' => '',
             'hostname' => gethostname() ?: 'unknown_host',
-            'tag' => self::label(),
+            'tag' => static::label(),
         ];
     }
 
@@ -112,43 +110,9 @@ class CaptureRequestLifecycle
     public static function responseToString($response): string
     {
         if (!is_string($response)) {
-            return var_export($response) ?? '';
+            return var_export($response, true) ?? '';
         }
 
         return $response;
-    }
-
-    public static function shouldClipped(string $log): bool
-    {
-        $length = config('laralog.log_clipped_length');
-        $length = is_numeric($length) ? (int) $length : self::DEFAULT_CLIPPED_LENGTH;
-
-        return static::$shouldLabelClippedLogTag = ((self::POSITIVE_INFINITY !== config('laralog.log_clipped_length'))
-            && (mb_strlen($log) > $length));
-    }
-
-    public static function clipLog(string $log): string
-    {
-        if (!self::shouldClipped($log)) {
-            return $log;
-        }
-        $length = config('laralog.log_clipped_length');
-        $length = is_numeric($length) ? (int) $length : self::DEFAULT_CLIPPED_LENGTH;
-
-        return mb_substr($log, 0, $length).'...clipped';
-    }
-
-    public static function label(): string
-    {
-        $tag = '';
-        if (static::$shouldLabelClippedLogTag) {
-            $tag .= 'clipped';
-        }
-
-        if (static::$shouldLabelExceptedUriTag) {
-            $tag .= ',excludeUri';
-        }
-
-        return $tag;
     }
 }
