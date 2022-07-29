@@ -40,6 +40,8 @@ jobs:
             php: 7.4
           - laravel: 5.5.*
             php: 7.4
+          - laravel: 8.*
+            php: 7.2
 
     name: P${{ matrix.php }} - L${{ matrix.laravel }} - ${{ matrix.dependency-version }} - ${{ matrix.os }}
 
@@ -60,7 +62,7 @@ jobs:
           composer update --${{ matrix.dependency-version }} --prefer-dist --no-interaction --no-suggest
 
       - name: Execute tests
-        run: vendor/bin/phpunit
+        run: vendor/bin/phpunit tests -vvv
 
       - name: Send email notification
         uses: cinotify/github-action@main
