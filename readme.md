@@ -52,7 +52,10 @@
         // 增加 Hostname 作为日志存储文件名后缀
         'path'   => sprintf(env('DAILY_LARALOG_STORAGE_PATH', storage_path('logs/laralog-%s.log')), gethostname()),
         // 指定使用的日志格式化组件类
-        'tap'    => [\Shallowman\Laralog\Formatter\LaralogFormatter::class],
+        'tap'    => [
+            \Shallowman\Laralog\Formatter\LaralogFormatter::class,
+            \Shallowman\Laralog\Processor\LaralogProcessor::class,
+        ],
         'level'  => 'info',
         // 日志文件保留天数
         'days'   => 7,
