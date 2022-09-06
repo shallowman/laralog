@@ -72,6 +72,7 @@ class JsonFormatter extends MonologJsonFormatter
             'platform' => '',
             'version' => '',
             'os' => '',
+            'uid' => $record['extra']['uid'] ?? '',
             'start' => Carbon::createFromTimestampMs(self::getStartMicroTimestamp() * 1000)->format('Y-m-d H:i:s.u'),
             'end' => now()->format('Y-m-d H:i:s.u'),
             'parameters' => '',
