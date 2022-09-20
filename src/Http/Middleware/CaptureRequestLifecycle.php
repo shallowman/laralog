@@ -82,7 +82,7 @@ class CaptureRequestLifecycle
             'os' => '',
             'start' => Carbon::createFromTimestampMs(static::getStartMicroTimestamp($request) * 1000)->format('Y-m-d H:i:s.u'),
             'end' => now()->format('Y-m-d H:i:s.u'),
-            'parameters' => self::clipLog(collect($request->except(config('laralog.except.fields')))->toJson()),
+            'parameters' => self::clipLog(self::requestToString($request)),
             'performance' => round(microtime(true) - static::getStartMicroTimestamp($request), 6),
             'response' => self::shouldCapture() ? '' : self::clipLog(self::responseToString($response->getContent())),
             'extra' => '',
@@ -114,5 +114,15 @@ class CaptureRequestLifecycle
         }
 
         return $response;
+    }
+
+    public static function requestToString(Request $request): string
+    {
+        $json = collect($request->except(config('laralog.except.fields')))->toJson();
+        if (!$json) {
+            return serialize($request->except(config('laralog.except.fields')));
+        }
+
+        return $json;
     }
 }

@@ -4,20 +4,18 @@ declare(strict_types=1);
 
 namespace Shallowman\Laralog\Processor;
 
-use Monolog\ResettableInterface;
 use Monolog\Processor\ProcessorInterface;
-
+use Monolog\ResettableInterface;
 
 /**
- * Adds a unique identifier into records
+ * Adds a unique identifier into records.
  *
  * @author Simon Mönch <sm@webfactory.de>
  */
 class UidProcessor implements ProcessorInterface, ResettableInterface
 {
-
     /** @var string */
-    static $uid;
+    public static $uid;
 
     public function __construct(int $length = 7)
     {
@@ -34,6 +32,7 @@ class UidProcessor implements ProcessorInterface, ResettableInterface
     public function __invoke(array $record): array
     {
         $record['extra']['uid'] = static::$uid;
+
         return $record;
     }
 
@@ -54,6 +53,7 @@ class UidProcessor implements ProcessorInterface, ResettableInterface
         if (!empty(static::$uid)) {
             return static::$uid;
         }
+
         return static::$uid = substr(bin2hex(random_bytes((int) ceil($length / 2))), 0, $length);
     }
 }
