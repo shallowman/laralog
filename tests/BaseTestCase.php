@@ -7,6 +7,7 @@ use Illuminate\Routing\Router;
 use Illuminate\Support\Str;
 use Monolog\Handler\TestHandler;
 use Shallowman\Laralog\LaraLogger;
+use Illuminate\Contracts\Http\Kernel;
 
 class BaseTestCase extends \Orchestra\Testbench\TestCase
 {
@@ -25,9 +26,9 @@ class BaseTestCase extends \Orchestra\Testbench\TestCase
      *
      * @return void
      */
-    protected function resolveApplicationHttpKernel($app)
+    protected function resolveApplicationHttpKernel($app): void
     {
-        $app->singleton('Illuminate\Contracts\Http\Kernel', 'Shallowman\Laralog\Tests\Http\Kernel');
+        $app->singleton(Kernel::class, \Shallowman\Laralog\Tests\Http\Kernel::class);
     }
 
     protected function getPackageProviders($app): array
@@ -45,7 +46,7 @@ class BaseTestCase extends \Orchestra\Testbench\TestCase
      *
      * @return void
      */
-    protected function defineEnvironment($app)
+    protected function defineEnvironment($app): void
     {
         // Setup default database to use sqlite :memory:
         $app['config']->set('logging.default', 'laralog');
@@ -80,7 +81,7 @@ class BaseTestCase extends \Orchestra\Testbench\TestCase
                     '/welcome',
                 ],
             ],
-            'log_clipped_length' => env('LARALOG_CLIPPED_LENGTH', 500),
+            'log_clipped_length' => 500,
         ]);
 
         $app['config']->set('logging.channels.emergency', [

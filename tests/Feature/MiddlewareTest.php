@@ -34,13 +34,13 @@ class MiddlewareTest extends BaseTestCase
         'tag',
     ];
 
-    public function testRequestCase1()
+    public function testRequestCase1(): void
     {
         $response = $this->get('test/case1');
         $response->assertStatus(200);
     }
 
-    public function testRequestCase2()
+    public function testRequestCase2(): void
     {
         try {
             $response = $this->get('test/case2');
@@ -50,7 +50,7 @@ class MiddlewareTest extends BaseTestCase
         }
     }
 
-    public function testCaptureHttpLifecycleLog()
+    public function testCaptureHttpLifecycleLog(): void
     {
         try {
             $response = $this->get('test/case2');
@@ -80,7 +80,7 @@ class MiddlewareTest extends BaseTestCase
         }
     }
 
-    public function testLogWrite()
+    public function testLogWrite(): void
     {
         try {
             $testCase1Context = ['test' => Str::random(100)];
@@ -103,11 +103,11 @@ class MiddlewareTest extends BaseTestCase
             $this->assertArrayHasKey('formatted', $records[0]);
             $formatMsg = $records[0]['formatted'];
             $this->assertJson($formatMsg);
-            $formattedMsg = json_decode($formatMsg, true);
+            $formattedMsg = json_decode($formatMsg, true, 512, JSON_THROW_ON_ERROR);
             $this->assertIsArray($formattedMsg);
             $this->assertArrayHasKey('tag', $formattedMsg);
             $this->assertSame('', $formattedMsg['tag']);
-            $this->assertEquals(mb_strlen(json_encode($testCase1Context)), mb_strlen($formattedMsg['extra']));
+            $this->assertEquals(mb_strlen(json_encode($testCase1Context, JSON_THROW_ON_ERROR)), mb_strlen($formattedMsg['extra']));
             Log::error('test-error', $testCase2Context);
             $records = $handler->getRecords();
             $this->assertArrayHasKey(1, $records);
@@ -122,7 +122,7 @@ class MiddlewareTest extends BaseTestCase
             $this->assertArrayHasKey('formatted', $record);
             $formatMsg = $record['formatted'];
             $this->assertJson($formatMsg);
-            $formattedMsg = json_decode($formatMsg, true);
+            $formattedMsg = json_decode($formatMsg, true, 512, JSON_THROW_ON_ERROR);
             $this->assertIsArray($formattedMsg);
             $this->assertArrayHasKey('tag', $formattedMsg);
             $this->assertSame('clipped', $formattedMsg['tag']);

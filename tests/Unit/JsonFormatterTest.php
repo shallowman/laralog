@@ -7,18 +7,18 @@ use Shallowman\Laralog\Tests\BaseTestCase;
 
 class JsonFormatterTest extends BaseTestCase
 {
-    public function testGetStartMicroTimestampWithSystemTs()
+    public function testGetStartMicroTimestampWithSystemTs(): void
     {
         $this->assertEqualsWithDelta(microtime(true), JsonFormatter::getStartMicroTimestamp(), 1000.0);
     }
 
-    public function testGetStartMicroTimestamp()
+    public function testGetStartMicroTimestamp(): void
     {
         define('LARAVEL_START', microtime(true));
         $this->assertSame(LARAVEL_START, JsonFormatter::getStartMicroTimestamp());
     }
 
-    public function testNormalizeExtra()
+    public function testNormalizeExtra(): void
     {
         $context = [
             'exception' => new \Exception('extra-exception'),
@@ -34,7 +34,7 @@ class JsonFormatterTest extends BaseTestCase
         $this->assertArrayHasKey('redundancy_again', json_decode($formatter->normalizeExtra($context), true));
     }
 
-    public function testTailor()
+    public function testTailor(): void
     {
         $normalizeRecord = ['a' => 'a', 'b' => 'b', 'c' => 'c'];
         $context = ['1', '2', 'a' => '3', 'd' => 'd'];
