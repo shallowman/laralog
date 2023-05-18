@@ -3,7 +3,6 @@
 namespace Shallowman\Laralog\Tests\Http;
 
 use Orchestra\Testbench\Foundation\Http\Kernel as HttpKernel;
-use Orchestra\Testbench\Http\Middleware;
 use Shallowman\Laralog\Http\Middleware\CaptureRequestLifecycle;
 
 final class Kernel extends HttpKernel
