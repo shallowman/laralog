@@ -21,4 +21,12 @@ class CaptureRequestLifecycleTest extends BaseTestCase
         $this->assertSame('test-case1', CaptureRequestLifecycle::responseToString('test-case1'));
         $this->assertSame(var_export(null, true), CaptureRequestLifecycle::responseToString(null));
     }
+
+    public function testClipLog(): void
+    {
+        $logString = "test";
+        $this->assertSame($logString, CaptureRequestLifecycle::clipLog($logString));
+        $clipLogString = str_repeat($logString, 251);
+        $this->assertSame(str_repeat($logString, 250), CaptureRequestLifecycle::clipLog($clipLogString));
+    }
 }
